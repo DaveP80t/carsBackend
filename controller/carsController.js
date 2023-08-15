@@ -20,7 +20,6 @@ const {
   checkId,
   checkNum,
   checkPost,
-  checkPref,
   checkPreferences,
   checkPut,
 } = require("../validations/crudValidations");
@@ -66,7 +65,6 @@ router.get("/limit/:num", checkNum, async (req, res) => {
   if (Car[0]) res.json(Car);
   else res.status(500).json({ err: "pg error" });
 });
-
 
 router.get("/:id", checkId, async (req, res) => {
   const Car = await getCarsById(req.params.id);

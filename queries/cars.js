@@ -100,9 +100,7 @@ async function getCarCard(id) {
 async function getPopularCars() {
     const data = await db
         .any(
-            `SELECT SPLIT_PART(name, ' ', 1) AS first_word, COUNT(*) AS count
-            FROM cars
-            where (preferences ->> 'isInterested') = 'true' GROUP BY first_word order by count desc`
+            `select a.id, a.name, b.count from cars a join popularity b on a.id = b.car_id order by count desc`
         )
         .then((res) => res)
         .catch((e) => {

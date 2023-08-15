@@ -21,17 +21,45 @@ CREATE TABLE public.cars (
 	CONSTRAINT unique_nameyear_constraint UNIQUE (name, model_year)
 );
 
+-- Table Triggers
+
+create trigger cars_insert_trigger after
+insert
+    on
+    public.cars for each row execute function insert_popularity_entry();
+
 CREATE TABLE public.car_comments (
 	id serial4 NOT NULL,
 	car_id int8 NULL,
 	"name" varchar(50) NOT NULL,
-	"comment" varchar(255) NULL,
-	CONSTRAINT car_comments_name_key UNIQUE (name),
+	"comment" varchar(255) NOT NULL,
+	isinterested bool NOT NULL DEFAULT false,
+	CONSTRAINT car_comments_name_cid_key UNIQUE (car_id, name),
 	CONSTRAINT car_comments_pkey PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX unique_comment_non_null_idx ON public.car_comments USING btree (comment) WHERE (comment IS NOT NULL);
+
+-- Table Triggers
+
+create trigger update_popularity_count_trigger after
+insert
+    or
+update
+    on
+    public.car_comments for each row execute function update_popularity_count();
 
 
 -- public.car_comments foreign keys
 
-ALTER TABLE public.car_comments ADD CONSTRAINT car_comments_car_id_fkey FOREIGN KEY (car_id) REFERENCES public.cars(id);
+ALTER TABLE public.car_comments ADD CONSTRAINT car_comments_car_id_fkey FOREIGN KEY (car_id) REFERENCES public.cars(id) ON DELETE CASCADE;
+
+CREATE TABLE public.popularity (
+	car_id int4 NOT NULL,
+	count int4 NULL DEFAULT 1,
+	CONSTRAINT check_positive_value CHECK ((count >= 1)),
+	CONSTRAINT popularity_pkey PRIMARY KEY (car_id)
+);
+
+
+-- public.popularity foreign keys
+
+ALTER TABLE public.popularity ADD CONSTRAINT popularity_car_id_fkey FOREIGN KEY (car_id) REFERENCES public.cars(id) ON DELETE CASCADE;
