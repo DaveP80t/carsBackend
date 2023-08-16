@@ -1,3 +1,4 @@
+const validator = require("validator");
 const columnValues = [
   "name",
   "mpg",
@@ -11,10 +12,24 @@ const columnValues = [
 ];
 
 function checkPref(req) {
-  let arr = Object.values(req.body.preferences ?? {})
-  if (!arr.length) return false
-  if (typeof req.body.preferences == 'object' && typeof arr[0] == 'boolean' && typeof arr[1] == 'string') return true;
-  else return false;
+  let arr = Object.values(req.body.preferences)
+  let pref = {
+    imageURL: null,
+    color: null
+  }
+  if (arr.length) {
+  let p = req.body.preferences;
+  for (let k in p) {
+    let keys = ['imageURL', 'color'];
+    if (!keys.includes(k)) return false;
+  }
+  if (p.imageURL && validator.isURL(p.imageURL)) pref.imageURL = p.imageURL;
+  if (p.color && typeof p.color == 'string') pref.color = p.color;
+  req.body.preferences = pref;
+  return true;
+  }
+  delete req.body.preferences;
+  return true;
 }
 
 const checkND = (req, res, next) => {
@@ -61,30 +76,71 @@ const checkPost = (req, res, next) => {
 const checkForm = (req, res, next) => {
   let n = req.body.name;
   let c = req.body.comment;
-  let i = req.body.isinterested
+  let i = req.body.imageURL
   let bool = Number.isNaN(+req.body.car_id)
-  if (!bool && typeof n == 'string' && typeof c == 'string' && (typeof i == 'boolean' || typeof i == 'undefined') && n.length > 3 && c.length > 1) next();
+  if (!bool && typeof n == 'string' && typeof c == 'string' && (!validator.isURL(i) || typeof i == 'undefined') && n.length > 3 && c.length > 1) next();
   else res.status(400).json({ err: "make new post body" });
 }
 
 const checkPreferences = (req, res, next) => {
   if (checkPref(req)) next();
-  else res.status(400).json({ err: "preferences must be JSON isInterested, color," });
+  else res.status(400).json({ err: "preferences must be JSON URL, color," });
 };
 
 const checkPut = (req, res, next) => {
   let arr = Object.keys(req.body);
   if (arr.length == 0 || (req.body && req.body.hasOwnProperty('preferences') && !checkPref(req)) || arr.length > 10) {
     if (arr.length == 0 || arr.length > 10) { res.status(400).json({ err: "make new update body" }); }
-    res.status(400).json({ err: "preferences must be JSON isInterested, color," });
+    res.status(400).json({ err: "preferences must be JSON URL, color," });
   } else {
     for (let n of arr) {
       if (
-        !columnValues.includes(n)
+        ![...columnValues, 'preferences'].includes(n)
       ) {
         res.status(400).json({ err: "make new update body" });
       }
     }
+    next();
+  }
+};
+// check put on comment
+const checkComm = (req, res, next) => {
+  let ci = +req.body.car_id;
+  let n = req.body.name;
+  let c = req.body.comment
+  let arr = Object.keys(req.body);
+  if (arr.length == 0 || arr.length > 4) {
+    res.status(400).json({ err: "make new body" });
+  } else if ( (req.body.car_id && Number.isNaN(ci)) || (req.body.name && typeof n !== 'string') || (req.body.comment && typeof c !== 'string') ) {
+    res.status(400).json({ err: "need type string" });
+  }else {
+    for (let a of arr) {
+      if (
+        !['car_id', 'name', 'comment', 'isinterested'].includes(a)
+      ) {
+        res.status(400).json({ err: "make new update body" });
+      }
+    }
+    next();
+  }
+};
+// check comment post
+const checkCommPost = (req, res, next) => {
+  let ci = +req.body.car_id;
+  let n = req.body.name;
+  let c = req.body.comment
+  let i = req.body.isinterested
+  let arr = Object.keys(req.body);
+  if (arr.length == 0 || arr.length > 4) {
+    res.status(400).json({ err: "make new body" });
+  } else if (Number.isNaN(ci) || typeof n !== 'string' || typeof c !== 'string' || (req.body.isinterested && typeof i !== 'boolean') ) {
+    res.status(400).json({ err: "need type number, string, boolean" });
+  }else {
+      if (
+        ['car_id', 'name', 'comment'].some(item => !arr.includes(item))
+      ) {
+        res.status(400).json({ err: "make new update body" });
+      }
     next();
   }
 };
@@ -96,6 +152,8 @@ module.exports = {
   checkNum,
   checkPost,
   checkForm,
+  checkComm,
+  checkCommPost,
   checkPreferences,
   checkPref,
   checkPut,

@@ -87,7 +87,7 @@ async function getCarsById(id) {
 async function getCarCard(id) {
     const car = await db
         .any(
-            "select c.*, n.name, n.comment from cars c left join car_comments n on c.id = n.car_id where c.id = $1",
+            "select c.*, n.*, count from cars c left join car_comments n on c.id = n.car_id left join popularity p on c.id = p.car_id where c.id = $1",
             id
         )
         .then((res) => res)

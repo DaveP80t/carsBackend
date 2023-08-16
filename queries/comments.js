@@ -47,6 +47,25 @@ async function deleteCommRow(args) {
         return e;
     }
 }
+//update a car_comment
+async function updateComment(args, id) {
+    let arr = Object.keys(args);
+    let vals = [...Object.values(args), id];
+    try {
+        const Row = await db.any(
+            `UPDATE car_comments SET ${arr
+                .map((item, i) => {
+                    return `${item} = $${i + 1}`
+                })
+                .join(", ")} where
+        id = $${vals.length} RETURNING *`,
+            vals
+        );
+        return Row;
+    } catch (e) {
+        return e;
+    }
+}
 
 
 
@@ -55,4 +74,5 @@ module.exports = {
     getCommById,
     addComm,
     deleteCommRow,
+    updateComment,
 }

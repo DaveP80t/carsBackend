@@ -6,7 +6,7 @@ CREATE DATABASE cars;
 DROP TABLE IF EXISTS public.cars;
 
 CREATE TABLE public.cars (
-	"name" text NULL,
+	"name" text NOT NULL,
 	mpg float8 NULL,
 	cylinders int8 NULL,
 	displacement float8 NULL,
@@ -16,7 +16,7 @@ CREATE TABLE public.cars (
 	model_year int8 NULL,
 	origin text NULL,
 	id serial4 NOT NULL,
-	preferences json NULL DEFAULT '{"isInterested": false, "color": null}'::json,
+	preferences json NULL DEFAULT '{"imageURL": null, "color": null}'::json,
 	CONSTRAINT cars_pkey PRIMARY KEY (id),
 	CONSTRAINT unique_nameyear_constraint UNIQUE (name, model_year)
 );
