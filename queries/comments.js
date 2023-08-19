@@ -11,13 +11,13 @@ async function getComments() {
 }
 //get comments by id
 async function getCommById(id) {
-    const car = await db
+    const comm = await db
         .any("select * from car_comments where id = $1", id)
         .then((res) => res)
         .catch((e) => {
             return e;
         });
-    return car;
+    return comm;
 }
 //creating a new comment entry
 async function addComm(args) {

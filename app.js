@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const carController = require("./controller/carsController");
 const popController = require("./controller/popController");
 const commentController = require("./controller/commController");
+const namesController = require("./controller/namesController");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(morgan("dev"));
 app.use("/cars", carController);
 app.use("/popular", popController);
 app.use("/comment", commentController);
+app.use("/carnames", namesController);
 app.get("/", (req, res) => {
   res.send("Welcome to classic carCommentary");
 });

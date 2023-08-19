@@ -1,13 +1,23 @@
 const db = require("../db/dbConfig");
 //get all cars
 async function getCars() {
-    const somecar = await db
+    const cars = await db
         .any("select * from cars ORDER BY id")
         .then((res) => res)
         .catch((e) => {
             return e;
         });
-    return somecar;
+    return cars;
+}
+
+async function getCarNames() {
+    const names = await db
+        .any("select id, name, model_year from cars ORDER BY name")
+        .then((res) => res)
+        .catch((e) => {
+            return e;
+        });
+    return names;
 }
 
 //get cars with num limit
@@ -87,7 +97,8 @@ async function getCarsById(id) {
 async function getCarCard(id) {
     const car = await db
         .any(
-            "select c.*, n.*, count from cars c left join car_comments n on c.id = n.car_id left join popularity p on c.id = p.car_id where c.id = $1",
+            `select c.*, n.id commentId, n.name username, comment, isinterested, count from cars c left join car_comments n on c.id = n.car_id left join popularity p on 
+            c.id = p.car_id where c.id = $1`,
             id
         )
         .then((res) => res)
@@ -100,7 +111,15 @@ async function getCarCard(id) {
 async function getPopularCars() {
     const data = await db
         .any(
-            `select a.id, a.name, b.count from cars a join popularity b on a.id = b.car_id order by count desc`
+            `with cte as (
+                select id, name, (preferences->> 'imageURL') imageurl, count from cars join popularity 
+                on id = car_id where count > 1
+                )
+                select * from cte
+                union
+                select id, name, (preferences->> 'imageURL') imageURL, 1 as count from cars
+                 where id not in (select id from cte)
+                and (preferences->> 'imageURL') is not null`
         )
         .then((res) => res)
         .catch((e) => {
@@ -158,9 +177,23 @@ async function updateRow(args, id) {
         return e;
     }
 }
+//update a popularity count
+async function updatePopularity(id) {
+    try {
+        const Row = await db.any(
+            `update popularity set count = (select count + 1 from popularity where 
+                car_id = $1) where car_id = $1 RETURNING *`,
+            id
+        );
+        return Row;
+    } catch (e) {
+        return e;
+    }
+}
 
 module.exports = {
     getCars,
+    getCarNames,
     getCarsByND,
     getCarsByName,
     getcarsBySubstring,
@@ -172,4 +205,5 @@ module.exports = {
     addRow,
     deleteRow,
     updateRow,
+    updatePopularity,
 };

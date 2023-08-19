@@ -21,13 +21,6 @@ CREATE TABLE public.cars (
 	CONSTRAINT unique_nameyear_constraint UNIQUE (name, model_year)
 );
 
--- Table Triggers
-
-create trigger cars_insert_trigger after
-insert
-    on
-    public.cars for each row execute function insert_popularity_entry();
-
 CREATE TABLE public.car_comments (
 	id serial4 NOT NULL,
 	car_id int8 NULL,
@@ -37,17 +30,6 @@ CREATE TABLE public.car_comments (
 	CONSTRAINT car_comments_name_cid_key UNIQUE (car_id, name),
 	CONSTRAINT car_comments_pkey PRIMARY KEY (id)
 );
-
--- Table Triggers
-
-create trigger update_popularity_count_trigger after
-insert
-    or
-update
-    on
-    public.car_comments for each row execute function update_popularity_count();
-
-
 -- public.car_comments foreign keys
 
 ALTER TABLE public.car_comments ADD CONSTRAINT car_comments_car_id_fkey FOREIGN KEY (car_id) REFERENCES public.cars(id) ON DELETE CASCADE;
@@ -59,7 +41,40 @@ CREATE TABLE public.popularity (
 	CONSTRAINT popularity_pkey PRIMARY KEY (car_id)
 );
 
-
 -- public.popularity foreign keys
-
 ALTER TABLE public.popularity ADD CONSTRAINT popularity_car_id_fkey FOREIGN KEY (car_id) REFERENCES public.cars(id) ON DELETE CASCADE;
+
+CREATE OR REPLACE FUNCTION update_popularity_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.isinterested = true THEN
+        UPDATE public.popularity
+        SET count = count + 1
+        WHERE car_id = NEW.car_id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION insert_popularity_entry()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.popularity (car_id)
+    VALUES (NEW.id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Table Triggers
+
+create trigger cars_insert_trigger after
+insert
+    on
+    public.cars for each row execute function insert_popularity_entry();
+
+create trigger update_popularity_count_trigger after
+insert
+    or
+update
+    on
+    public.car_comments for each row execute function update_popularity_count();

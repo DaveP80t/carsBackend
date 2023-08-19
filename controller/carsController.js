@@ -94,11 +94,8 @@ router.delete("/:id", checkId, async (req, res) => {
 router.put("/:id", checkId, checkPut, async (req, res) => {
   try {
     const updateCar = await updateRow(req.body, req.params.id);
-    if (updateCar.length === 0) {
-      res.status(404).json("This Car is not found");
-    } else {
-      res.status(200).json(updateCar[0]);
-    }
+    if (updateCar[0]) res.json(updateCar[0]);
+    else res.status(500).json("This Car is not found");
   } catch (e) {
     res.status(400).json({ error: e });
   }
