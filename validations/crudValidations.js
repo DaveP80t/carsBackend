@@ -8,25 +8,25 @@ const columnValues = [
   "weight",
   "acceleration",
   "model_year",
-  "origin"
+  "origin",
 ];
 
 function checkPref(req) {
-  let arr = Object.values(req.body.preferences)
+  let arr = Object.values(req.body.preferences);
   let pref = {
     imageURL: null,
-    color: null
-  }
+    color: null,
+  };
   if (arr.length) {
-  let p = req.body.preferences;
-  for (let k in p) {
-    let keys = ['imageURL', 'color'];
-    if (!keys.includes(k)) return false;
-  }
-  if (p.imageURL && validator.isURL(p.imageURL)) pref.imageURL = p.imageURL;
-  if (p.color && typeof p.color == 'string') pref.color = p.color;
-  req.body.preferences = pref;
-  return true;
+    let p = req.body.preferences;
+    for (let k in p) {
+      let keys = ["imageURL", "color"];
+      if (!keys.includes(k)) return false;
+    }
+    if (p.imageURL && validator.isURL(p.imageURL)) pref.imageURL = p.imageURL;
+    if (p.color && typeof p.color == "string") pref.color = p.color;
+    req.body.preferences = pref;
+    return true;
   }
   delete req.body.preferences;
   return true;
@@ -76,11 +76,19 @@ const checkPost = (req, res, next) => {
 const checkForm = (req, res, next) => {
   let n = req.body.name;
   let c = req.body.comment;
-  let i = req.body.imageURL
-  let bool = Number.isNaN(+req.body.car_id)
-  if (!bool && typeof n == 'string' && typeof c == 'string' && (!validator.isURL(i) || typeof i == 'undefined') && n.length > 3 && c.length > 1) next();
+  let i = req.body.imageURL;
+  let bool = Number.isNaN(+req.body.car_id);
+  if (
+    !bool &&
+    typeof n == "string" &&
+    typeof c == "string" &&
+    (!validator.isURL(i) || typeof i == "undefined") &&
+    n.length > 3 &&
+    c.length > 1
+  )
+    next();
   else res.status(400).json({ err: "make new post body" });
-}
+};
 
 const checkPreferences = (req, res, next) => {
   if (checkPref(req)) next();
@@ -89,14 +97,18 @@ const checkPreferences = (req, res, next) => {
 
 const checkPut = (req, res, next) => {
   let arr = Object.keys(req.body);
-  if (arr.length == 0 || (req.body && req.body.hasOwnProperty('preferences') && !checkPref(req)) || arr.length > 10) {
-    if (arr.length == 0 || arr.length > 10) { res.status(400).json({ err: "make new update body" }); }
+  if (
+    arr.length == 0 ||
+    (req.body && req.body.hasOwnProperty("preferences") && !checkPref(req)) ||
+    arr.length > 10
+  ) {
+    if (arr.length == 0 || arr.length > 10) {
+      res.status(400).json({ err: "make new update body" });
+    }
     res.status(400).json({ err: "preferences must be JSON URL, color," });
   } else {
     for (let n of arr) {
-      if (
-        ![...columnValues, 'preferences'].includes(n)
-      ) {
+      if (![...columnValues, "preferences"].includes(n)) {
         res.status(400).json({ err: "make new update body" });
       }
     }
@@ -107,17 +119,19 @@ const checkPut = (req, res, next) => {
 const checkComm = (req, res, next) => {
   let ci = +req.body.car_id;
   let n = req.body.name;
-  let c = req.body.comment
+  let c = req.body.comment;
   let arr = Object.keys(req.body);
   if (arr.length == 0 || arr.length > 4) {
     res.status(400).json({ err: "make new body" });
-  } else if ( (req.body.car_id && Number.isNaN(ci)) || (req.body.name && typeof n !== 'string') || (req.body.comment && typeof c !== 'string') ) {
+  } else if (
+    (req.body.car_id && Number.isNaN(ci)) ||
+    (req.body.name && typeof n !== "string") ||
+    (req.body.comment && typeof c !== "string")
+  ) {
     res.status(400).json({ err: "need type string" });
-  }else {
+  } else {
     for (let a of arr) {
-      if (
-        !['car_id', 'name', 'comment', 'isinterested'].includes(a)
-      ) {
+      if (!["car_id", "name", "comment", "isinterested"].includes(a)) {
         res.status(400).json({ err: "make new update body" });
       }
     }
@@ -128,19 +142,22 @@ const checkComm = (req, res, next) => {
 const checkCommPost = (req, res, next) => {
   let ci = +req.body.car_id;
   let n = req.body.name;
-  let c = req.body.comment
-  let i = req.body.isinterested
+  let c = req.body.comment;
+  let i = req.body.isinterested;
   let arr = Object.keys(req.body);
   if (arr.length == 0 || arr.length > 4) {
     res.status(400).json({ err: "make new body" });
-  } else if (Number.isNaN(ci) || typeof n !== 'string' || typeof c !== 'string' || (req.body.isinterested && typeof i !== 'boolean') ) {
+  } else if (
+    Number.isNaN(ci) ||
+    typeof n !== "string" ||
+    typeof c !== "string" ||
+    (req.body.isinterested && typeof i !== "boolean")
+  ) {
     res.status(400).json({ err: "need type number, string, boolean" });
-  }else {
-      if (
-        ['car_id', 'name', 'comment'].some(item => !arr.includes(item))
-      ) {
-        res.status(400).json({ err: "make new update body" });
-      }
+  } else {
+    if (["car_id", "name", "comment"].some((item) => !arr.includes(item))) {
+      res.status(400).json({ err: "make new update body" });
+    }
     next();
   }
 };
