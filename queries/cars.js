@@ -19,11 +19,13 @@ async function getCarNames() {
     });
   return names;
 }
-
 //get cars with num limit
-async function getCarsLimit(args) {
+async function getCarsLimit(num) {
   const somecar = await db
-    .any(`select * from cars ORDER BY id limit ${args}`)
+    .any(
+      `select a.*, count from (select * from cars order by id limit $1) a, (select count(*) from cars) b`,
+      num
+    )
     .then((res) => res)
     .catch((e) => {
       return e;

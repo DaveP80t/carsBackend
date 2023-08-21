@@ -6,6 +6,7 @@ const carController = require("./controller/carsController");
 const popController = require("./controller/popController");
 const commentController = require("./controller/commController");
 const namesController = require("./controller/namesController");
+const indexController = require("./controller/indexController");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use("/cars", carController);
 app.use("/popular", popController);
 app.use("/comment", commentController);
 app.use("/carnames", namesController);
+app.use("/index", indexController);
 app.get("/", (req, res) => {
   res.send("Welcome to classic carCommentary");
 });
