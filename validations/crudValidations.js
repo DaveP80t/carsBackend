@@ -12,6 +12,7 @@ const columnValues = [
 ];
 
 function checkPref(req) {
+  if (!req.body.hasOwnProperty("preferences")) return true;
   let arr = Object.values(req.body.preferences);
   let pref = {
     imageURL: null,
@@ -25,6 +26,7 @@ function checkPref(req) {
     }
     if (p.imageURL && validator.isURL(p.imageURL)) pref.imageURL = p.imageURL;
     if (p.color && typeof p.color == "string") pref.color = p.color;
+    if (p.color && !p.imageURL) pref.color = null;
     req.body.preferences = pref;
     return true;
   }
@@ -53,6 +55,15 @@ const checkId = (req, res, next) => {
 const checkNum = (req, res, next) => {
   if (Number.isNaN(+req.params.num)) {
     res.status(400).json({ error: "limit value must be a number" });
+  } else next();
+};
+
+const makeModel = (req, res, next) => {
+  if (req.body && req.body.hasOwnProperty("name")) {
+    let n = req.body.name.trim().split(" ");
+    if (n.length < 2)
+      res.status(400).json({ err: "please submit make and model" });
+    else if (n.length > 1) next();
   } else next();
 };
 
@@ -97,23 +108,11 @@ const checkPreferences = (req, res, next) => {
 
 const checkPut = (req, res, next) => {
   let arr = Object.keys(req.body);
-  if (
-    arr.length == 0 ||
-    (req.body && req.body.hasOwnProperty("preferences") && !checkPref(req)) ||
-    arr.length > 10
-  ) {
-    if (arr.length == 0 || arr.length > 10) {
-      res.status(400).json({ err: "make new update body" });
-    }
-    res.status(400).json({ err: "preferences must be JSON URL, color," });
-  } else {
-    for (let n of arr) {
-      if (![...columnValues, "preferences"].includes(n)) {
-        res.status(400).json({ err: "make new update body" });
-      }
-    }
-    next();
-  }
+  if (arr.length && arr.length <= 10) {
+    if (arr.every((item) => [...columnValues, "preferences"].includes(item))) {
+      next();
+    } else res.status(400).json({ err: "make new update body" });
+  } else res.status(400).json({ err: "empty body or too many key values" });
 };
 // check put on comment
 const checkComm = (req, res, next) => {
@@ -174,4 +173,5 @@ module.exports = {
   checkPreferences,
   checkPref,
   checkPut,
+  makeModel,
 };

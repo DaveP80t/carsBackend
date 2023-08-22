@@ -22,6 +22,7 @@ const {
   checkPost,
   checkPreferences,
   checkPut,
+  makeModel,
 } = require("../validations/crudValidations");
 
 router.get("/", async (req, res, next) => {
@@ -78,7 +79,7 @@ router.get("/card/:id", checkId, async (req, res) => {
   else res.status(500).json({ err: "pg error" });
 });
 
-router.post("/", checkPost, checkPreferences, async (req, res) => {
+router.post("/", checkPost, makeModel, checkPreferences, async (req, res) => {
   const newRow = await addRow(req.body);
   if (newRow[0]) res.status(201).json(newRow[0]);
   else res.status(500).json({ err: "pg error" });
@@ -91,14 +92,21 @@ router.delete("/:id", checkId, async (req, res) => {
   else res.redirect("/notfound");
 });
 
-router.put("/:id", checkId, checkPut, async (req, res) => {
-  try {
-    const updateCar = await updateRow(req.body, req.params.id);
-    if (updateCar[0]) res.json(updateCar[0]);
-    else res.status(500).json("This Car is not found");
-  } catch (e) {
-    res.status(400).json({ error: e });
+router.put(
+  "/:id",
+  checkId,
+  checkPreferences,
+  checkPut,
+  makeModel,
+  async (req, res) => {
+    try {
+      const updateCar = await updateRow(req.body, req.params.id);
+      if (updateCar[0]) res.json(updateCar[0]);
+      else res.status(500).json("This Car is not found");
+    } catch (e) {
+      res.status(400).json({ error: e });
+    }
   }
-});
+);
 
 module.exports = router;

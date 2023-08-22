@@ -130,6 +130,11 @@ async function getPopularCars() {
 async function addRow(args) {
   let vals = Object.values(args);
   try {
+    vals.forEach((item, i) => {
+      if (typeof item === "string") {
+        vals[i] = vals[i].trim();
+      }
+    });
     const Row = await db.any(
       `INSERT INTO cars (${Object.keys(args).join(",")}) 
         VALUES (${vals
