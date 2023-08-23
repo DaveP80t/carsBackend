@@ -34,10 +34,14 @@ function checkPref(req) {
   return true;
 }
 
-const checkND = (req, res, next) => {
-  if (!req.query.name ^ !req.query.y) {
-    res.status(400).json({ error: "enter original name and model year" });
-  } else next();
+const checkOL = (req, res, next) => {
+  if (!req.query.off || !req.query.lim) {
+    res.status(400).json({ error: "enter off and lim" });
+  } else if (req.query.off && req.query.lim) {
+    if (Number.isNaN(+req.query.off) || Number.isNaN(+req.query.lim)) {
+      res.status(400).json({ error: "please enter numbers" });
+    } else next();
+  }
 };
 
 const checkSearch = (req, res, next) => {
@@ -162,7 +166,7 @@ const checkCommPost = (req, res, next) => {
 };
 
 module.exports = {
-  checkND,
+  checkOL,
   checkSearch,
   checkId,
   checkNum,

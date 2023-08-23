@@ -3,7 +3,6 @@ const router = express.Router();
 const {
   getCars,
   getCarsByND,
-  getCarsByName,
   getcarsBySubstring,
   getCarsLimit,
   getcarsLimDesc,
@@ -15,7 +14,6 @@ const {
 } = require("../queries/cars");
 
 const {
-  checkND,
   checkSearch,
   checkId,
   checkNum,
@@ -25,14 +23,6 @@ const {
   makeModel,
 } = require("../validations/crudValidations");
 
-router.get("/", async (req, res, next) => {
-  if (req.query.q && !req.query.model_year) {
-    const Cars = await getCarsByName(req.query.q.trim());
-    if (Cars[0]) res.json(Cars);
-    else res.status(500).json({ err: "pg error" });
-  } else next();
-});
-
 router.get("/search", checkSearch, async (req, res, next) => {
   if (req.query.q) {
     const Cars = await getcarsBySubstring(req.query.q.trim());
@@ -41,8 +31,8 @@ router.get("/search", checkSearch, async (req, res, next) => {
   } else next();
 });
 
-router.get("/", checkND, async (req, res, next) => {
-  if (req.query.name) {
+router.get("/", async (req, res, next) => {
+  if (req.query.name && req.query.y) {
     const Cars = await getCarsByND(req.query.name, req.query.y);
     if (Cars[0]) res.json(Cars);
     else res.status(500).json({ err: "pg error" });
