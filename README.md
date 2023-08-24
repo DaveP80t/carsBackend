@@ -15,7 +15,7 @@ http GET localhost:3001/comment
 
 http POST localhost:3001/comment
 
-http GET localhost:3001/index/:num
+http GET localhost:3001/index off==1 lim==1
 
 http GET localhost:3001/popular
 ```

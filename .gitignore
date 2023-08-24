@@ -1,7 +1,5 @@
-.env
+*.env
 
-node_modules
-.DS_Store
+src/node_modules
+*.DS_Store
 commands.md
-db/banner_dump.sql
-db/table_dump.sql
